@@ -1021,7 +1021,7 @@ body[data-theme="dark"] #theme-icon {
 
         const themeButton =
             homeHeader.querySelector('button[onclick*="toggleTheme"]') ||
-            homeHeader.querySelector('#theme-icon')?.closest('button');
+            (function(){var i=homeHeader.querySelector('#theme-icon');return i?i.parentNode:null;})();
 
         const wrapper = document.createElement('button');
         wrapper.id = 'qbank-backup-btn';
@@ -1068,7 +1068,7 @@ body[data-theme="dark"] #theme-icon {
         const button = document.getElementById('qbank-backup-btn');
         if (!sheet || sheet.hidden) return;
 
-        if (sheet.contains(e.target) || button?.contains(e.target)) return;
+        if (sheet.contains(e.target) || (button && button.contains(e.target))) return;
         sheet.hidden = true;
     });
 

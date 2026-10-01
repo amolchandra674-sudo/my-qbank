@@ -51,10 +51,45 @@ public class MainActivity extends Activity {
         webView.setHorizontalScrollBarEnabled(false);
 
         webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+
+                int statusId = getResources().getIdentifier(
+                        "status_bar_height", "dimen", "android");
+                int navId = getResources().getIdentifier(
+                        "navigation_bar_height", "dimen", "android");
+
+                int top = statusId > 0
+                        ? getResources().getDimensionPixelSize(statusId) : 0;
+                int bottom = navId > 0
+                        ? getResources().getDimensionPixelSize(navId) : 0;
+
+                String js =
+                        "document.documentElement.style.setProperty('--android-safe-top','"
+                        + top + "px');" +
+                        "document.documentElement.style.setProperty('--android-safe-bottom','"
+                        + bottom + "px');";
+
+                view.evaluateJavascript(js, null);
+            }
+        });
 
         root.addView(webView, new FrameLayout.LayoutParams(-1, -1));
         setContentView(root);
+
+        int statusId = getResources().getIdentifier(
+                "status_bar_height", "dimen", "android");
+        int navId = getResources().getIdentifier(
+                "navigation_bar_height", "dimen", "android");
+
+        int top = statusId > 0
+                ? getResources().getDimensionPixelSize(statusId) : 0;
+        int bottom = navId > 0
+                ? getResources().getDimensionPixelSize(navId) : 0;
+
+        root.setPadding(0, top, 0, bottom);
 
         int statusId = getResources().getIdentifier(
                 "status_bar_height", "dimen", "android"
