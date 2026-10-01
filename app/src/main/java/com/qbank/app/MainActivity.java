@@ -92,18 +92,6 @@ public class MainActivity extends Activity {
         root.setPadding(0, top, 0, bottom);
 
 
-        int nav = navId > 0
-                ? getResources().getDimensionPixelSize(navId)
-                : 0;
-
-        String js =
-                "document.documentElement.style.setProperty('--android-safe-top','"
-                        + status + "px');" +
-                "document.documentElement.style.setProperty('--android-safe-bottom','"
-                        + nav + "px');";
-
-        webView.post(() -> webView.evaluateJavascript(js, null));
-
         webView.loadUrl("file:///android_asset/index.html");
     }
 
