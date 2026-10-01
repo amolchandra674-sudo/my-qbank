@@ -91,16 +91,6 @@ public class MainActivity extends Activity {
 
         root.setPadding(0, top, 0, bottom);
 
-        int statusId = getResources().getIdentifier(
-                "status_bar_height", "dimen", "android"
-        );
-        int navId = getResources().getIdentifier(
-                "navigation_bar_height", "dimen", "android"
-        );
-
-        int status = statusId > 0
-                ? getResources().getDimensionPixelSize(statusId)
-                : 0;
 
         int nav = navId > 0
                 ? getResources().getDimensionPixelSize(navId)
