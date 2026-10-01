@@ -1,0 +1,33 @@
+{
+  "folders": 25,
+  "folder_names": [
+    "Anatomy",
+    "Physiology",
+    "Biochemistry",
+    "Pharmacology",
+    "Microbiology",
+    "Pathology",
+    "Community Medicine",
+    "Forensic Medicine",
+    "Ophthalmology",
+    "Ophthalmology INICET 2022",
+    "ENT",
+    "ENT INICET 2021",
+    "ENT INICET 2022",
+    "ENT INICET 2023",
+    "Anesthesia",
+    "Dermatology",
+    "Psychiatry",
+    "Radiology",
+    "Medicine",
+    "Surgery",
+    "Orthopedics",
+    "Paediatrics",
+    "Obstetrics and Gynecology",
+    "Obstetrics and Gynecology INICET 2021",
+    "Obstetrics and Gynecology INICET 2022"
+  ],
+  "lessons": 285,
+  "questions": 5131,
+  "images": 5509
+}
