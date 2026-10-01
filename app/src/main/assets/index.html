@@ -218,6 +218,200 @@
         }
 
     </style>
+
+<style id="qbank-polish-v2">
+:root {
+    --android-safe-top: 0px;
+    --android-safe-bottom: 0px;
+}
+
+.app-header {
+    top: var(--android-safe-top) !important;
+    min-height: 58px;
+    padding: 12px 16px !important;
+    transition:
+        background-color .25s ease,
+        box-shadow .25s ease,
+        transform .2s ease;
+    box-shadow: 0 4px 18px rgba(15,23,42,.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.bottom-nav {
+    bottom: var(--android-safe-bottom) !important;
+    min-height: 64px;
+    padding-bottom: 6px !important;
+    transition:
+        background-color .25s ease,
+        box-shadow .25s ease,
+        transform .2s ease;
+    box-shadow: 0 -4px 18px rgba(15,23,42,.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.nav-item {
+    position: relative;
+    transition:
+        transform .18s ease,
+        color .18s ease,
+        opacity .18s ease;
+}
+
+.nav-item.active {
+    transform: translateY(-2px);
+}
+
+.nav-item.active::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 1px;
+    width: 24px;
+    height: 3px;
+    border-radius: 999px;
+    transform: translateX(-50%);
+    background: var(--accent);
+    animation: qbank-nav-in .18s ease-out;
+}
+
+.nav-item i {
+    transition:
+        transform .2s ease,
+        opacity .2s ease;
+}
+
+.nav-item.active i {
+    transform: scale(1.08);
+}
+
+.screen.active {
+    animation: qbank-screen-in .22s ease-out;
+}
+
+@keyframes qbank-screen-in {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes qbank-nav-in {
+    from {
+        width: 10px;
+        opacity: 0;
+    }
+    to {
+        width: 24px;
+        opacity: 1;
+    }
+}
+
+.universal-back {
+    position: absolute !important;
+    left: 10px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 5;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.45rem !important;
+    transition: transform .18s ease, background-color .18s ease;
+}
+
+.universal-back:active {
+    transform: translateY(-50%) scale(.92) !important;
+}
+
+.qbank-backup-btn {
+    margin-left: 4px;
+    transition: transform .18s ease;
+}
+
+.qbank-backup-btn:active {
+    transform: scale(.92);
+}
+
+.qbank-backup-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+#qbank-backup-sheet {
+    position: fixed;
+    top: calc(var(--android-safe-top) + 62px);
+    right: 14px;
+    z-index: 9999;
+    width: min(245px, calc(100vw - 28px));
+    background: var(--surface);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 8px;
+    box-shadow: 0 18px 40px rgba(15,23,42,.18);
+    animation: qbank-sheet-in .18s ease-out;
+}
+
+#qbank-backup-sheet[hidden] {
+    display: none;
+}
+
+#qbank-backup-sheet button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    border-radius: 13px;
+    padding: 13px 14px;
+    text-align: left;
+    font: inherit;
+    font-weight: 600;
+    transition: background-color .18s ease, transform .15s ease;
+}
+
+#qbank-backup-sheet button:active {
+    transform: scale(.98);
+}
+
+#qbank-backup-sheet button:hover {
+    background: rgba(99,102,241,.08);
+}
+
+#qbank-backup-sheet .backup-note {
+    padding: 8px 12px 10px;
+    font-size: .78rem;
+    opacity: .65;
+}
+
+@keyframes qbank-sheet-in {
+    from {
+        opacity: 0;
+        transform: translateY(-5px) scale(.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+#theme-icon {
+    transition: transform .28s ease;
+}
+
+body[data-theme="dark"] #theme-icon {
+    transform: rotate(180deg);
+}
+</style>
+
 </head>
 <body>
 
@@ -771,5 +965,327 @@
 
         init();
     </script>
+
+<script id="qbank-native-v2">
+(function () {
+    if (window.__qbankNativeV2) return;
+    window.__qbankNativeV2 = true;
+
+    const screenStack = [];
+    let handlingBack = false;
+
+    function activeScreen() {
+        const el = document.querySelector('.screen.active');
+        return el ? el.id : null;
+    }
+
+    function syncAndroidTheme() {
+        try {
+            const dark = document.body.getAttribute('data-theme') === 'dark';
+            if (window.AndroidBridge && AndroidBridge.setSystemBarsDark) {
+                AndroidBridge.setSystemBarsDark(dark);
+            }
+        } catch (e) {}
+    }
+
+    function ensureBackButtons() {
+        document.querySelectorAll('.screen').forEach(function (screen) {
+            if (screen.id === 'screen-home') return;
+
+            const header = screen.querySelector('.app-header');
+            if (!header) return;
+
+            if (
+                header.querySelector('.universal-back') ||
+                header.querySelector('.fa-chevron-left')
+            ) {
+                return;
+            }
+
+            const button = document.createElement('button');
+            button.className = 'icon-btn universal-back';
+            button.type = 'button';
+            button.setAttribute('aria-label', 'Back');
+            button.innerHTML = '‹';
+            button.addEventListener('click', function () {
+                window.qbankBack();
+            });
+
+            header.insertBefore(button, header.firstChild);
+        });
+    }
+
+    function ensureBackupUI() {
+        const homeHeader = document.querySelector('#screen-home .app-header');
+        if (!homeHeader || document.getElementById('qbank-backup-btn')) return;
+
+        const themeButton =
+            homeHeader.querySelector('button[onclick*="toggleTheme"]') ||
+            homeHeader.querySelector('#theme-icon')?.closest('button');
+
+        const wrapper = document.createElement('button');
+        wrapper.id = 'qbank-backup-btn';
+        wrapper.className = 'icon-btn qbank-backup-btn';
+        wrapper.type = 'button';
+        wrapper.title = 'Backup / Restore';
+        wrapper.setAttribute('aria-label', 'Backup / Restore');
+        wrapper.innerHTML =
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+            'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M7 3v12"/><path d="m3 11 4 4 4-4"/>' +
+            '<path d="M17 21V9"/><path d="m13 13 4-4 4 4"/>' +
+            '</svg>';
+
+        wrapper.addEventListener('click', function (e) {
+            e.stopPropagation();
+            qbankToggleBackupMenu();
+        });
+
+        if (themeButton) {
+            themeButton.insertAdjacentElement('afterend', wrapper);
+        } else {
+            homeHeader.appendChild(wrapper);
+        }
+
+        document.body.insertAdjacentHTML(
+            'beforeend',
+            '<div id="qbank-backup-sheet" hidden>' +
+            '<button type="button" onclick="qbankExportBackup()">⬇ Export JSON backup</button>' +
+            '<button type="button" onclick="qbankImportBackup()">⬆ Import JSON backup</button>' +
+            '<div class="backup-note">Backs up your saved QBank data and preferences.</div>' +
+            '</div>'
+        );
+    }
+
+    window.qbankToggleBackupMenu = function () {
+        const sheet = document.getElementById('qbank-backup-sheet');
+        if (!sheet) return;
+        sheet.hidden = !sheet.hidden;
+    };
+
+    document.addEventListener('click', function (e) {
+        const sheet = document.getElementById('qbank-backup-sheet');
+        const button = document.getElementById('qbank-backup-btn');
+        if (!sheet || sheet.hidden) return;
+
+        if (sheet.contains(e.target) || button?.contains(e.target)) return;
+        sheet.hidden = true;
+    });
+
+    window.qbankExportBackup = function () {
+        const storage = {};
+
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            storage[key] = localStorage.getItem(key);
+        }
+
+        const payload = {
+            app: 'My QBank',
+            schemaVersion: 1,
+            exportedAt: new Date().toISOString(),
+            storage: storage
+        };
+
+        const json = JSON.stringify(payload, null, 2);
+        const date = new Date().toISOString().slice(0, 10);
+        const fileName = 'MyQBank_Backup_' + date + '.json';
+
+        const sheet = document.getElementById('qbank-backup-sheet');
+        if (sheet) sheet.hidden = true;
+
+        try {
+            if (window.AndroidBridge && AndroidBridge.exportJson) {
+                AndroidBridge.exportJson(json, fileName);
+                return;
+            }
+        } catch (e) {}
+
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(function () {
+            URL.revokeObjectURL(url);
+        }, 1000);
+    };
+
+    window.qbankImportBackup = function () {
+        const sheet = document.getElementById('qbank-backup-sheet');
+        if (sheet) sheet.hidden = true;
+
+        try {
+            if (window.AndroidBridge && AndroidBridge.importJson) {
+                AndroidBridge.importJson();
+                return;
+            }
+        } catch (e) {}
+
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json,application/json';
+
+        input.addEventListener('change', function () {
+            const file = input.files && input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function () {
+                window.applyImportedBackup(String(reader.result || ''));
+            };
+            reader.readAsText(file);
+        });
+
+        input.click();
+    };
+
+    window.applyImportedBackup = function (text) {
+        try {
+            const payload = JSON.parse(text);
+
+            if (
+                !payload ||
+                payload.app !== 'My QBank' ||
+                !payload.storage ||
+                typeof payload.storage !== 'object'
+            ) {
+                throw new Error('This is not a valid My QBank backup file.');
+            }
+
+            localStorage.clear();
+
+            Object.keys(payload.storage).forEach(function (key) {
+                const value = payload.storage[key];
+                if (typeof value === 'string') {
+                    localStorage.setItem(key, value);
+                }
+            });
+
+            alert('Backup imported successfully. The app will now reload.');
+            location.reload();
+
+        } catch (e) {
+            alert('Import failed: ' + e.message);
+        }
+    };
+
+    const originalShowScreen =
+        typeof window.showScreen === 'function'
+            ? window.showScreen
+            : null;
+
+    if (originalShowScreen) {
+        window.showScreen = function (id) {
+            const current = activeScreen();
+
+            if (id === 'screen-home') {
+                screenStack.length = 0;
+            } else if (
+                !handlingBack &&
+                current &&
+                current !== id
+            ) {
+                screenStack.push(current);
+            }
+
+            const result = originalShowScreen.apply(this, arguments);
+
+            setTimeout(function () {
+                ensureBackButtons();
+                ensureBackupUI();
+            }, 0);
+
+            return result;
+        };
+    }
+
+    window.qbankBack = function () {
+        const current = activeScreen();
+
+        if (!current || current === 'screen-home') {
+            return false;
+        }
+
+        if (
+            current === 'screen-quiz' &&
+            typeof window.goBackFromQuiz === 'function'
+        ) {
+            handlingBack = true;
+
+            try {
+                window.goBackFromQuiz();
+            } finally {
+                handlingBack = false;
+            }
+
+            const after = activeScreen();
+
+            if (after === 'screen-home') {
+                screenStack.length = 0;
+            } else {
+                while (
+                    screenStack.length &&
+                    screenStack[screenStack.length - 1] === after
+                ) {
+                    screenStack.pop();
+                }
+            }
+
+            ensureBackButtons();
+            return true;
+        }
+
+        while (screenStack.length) {
+            const previous = screenStack.pop();
+            if (previous && previous !== current) {
+                handlingBack = true;
+                try {
+                    if (originalShowScreen) {
+                        originalShowScreen.call(this, previous);
+                    }
+                } finally {
+                    handlingBack = false;
+                }
+
+                ensureBackButtons();
+                return true;
+            }
+        }
+
+        handlingBack = true;
+
+        try {
+            if (originalShowScreen) {
+                originalShowScreen.call(this, 'screen-home');
+            }
+        } finally {
+            handlingBack = false;
+        }
+
+        screenStack.length = 0;
+        ensureBackButtons();
+        return true;
+    };
+
+    if (typeof window.toggleTheme === 'function') {
+        const originalToggleTheme = window.toggleTheme;
+
+        window.toggleTheme = function () {
+            const result = originalToggleTheme.apply(this, arguments);
+            syncAndroidTheme();
+            return result;
+        };
+    }
+
+    ensureBackButtons();
+    ensureBackupUI();
+    syncAndroidTheme();
+})();
+</script>
+
 </body>
 </html>
