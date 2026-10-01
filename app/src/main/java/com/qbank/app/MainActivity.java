@@ -3,12 +3,8 @@ package com.qbank.app;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Insets;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
-import android.view.WindowInsets;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -33,75 +29,70 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
 
-        setSystemBarsDark(false);
+        getWindow().setStatusBarColor(Color.parseColor("#F8FAFC"));
+        getWindow().setNavigationBarColor(Color.parseColor("#F8FAFC"));
+
+        getWindow().getDecorView().setSystemUiVisibility(
+                android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
+                android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        );
 
         FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(Color.rgb(248, 250, 252));
 
         webView = new WebView(this);
-        webView.setBackgroundColor(Color.TRANSPARENT);
+        webView.setBackgroundColor(Color.parseColor("#F8FAFC"));
 
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
         webView.getSettings().setAllowFileAccess(true);
         webView.getSettings().setAllowContentAccess(false);
+
         webView.setVerticalScrollBarEnabled(false);
         webView.setHorizontalScrollBarEnabled(false);
 
         webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
         webView.setWebViewClient(new WebViewClient());
 
-        root.addView(
-                webView,
-                new FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT
-                )
+        root.addView(webView, new FrameLayout.LayoutParams(-1, -1));
+        setContentView(root);
+
+        int statusId = getResources().getIdentifier(
+                "status_bar_height", "dimen", "android"
+        );
+        int navId = getResources().getIdentifier(
+                "navigation_bar_height", "dimen", "android"
         );
 
-        root.setOnApplyWindowInsetsListener((v, insets) -> {
-            int top;
-            int bottom;
+        int status = statusId > 0
+                ? getResources().getDimensionPixelSize(statusId)
+                : 0;
 
-            if (Build.VERSION.SDK_INT >= 30) {
-                Insets bars = insets.getInsets(
-                        WindowInsets.Type.statusBars() |
-                        WindowInsets.Type.navigationBars()
-                );
-                top = bars.top;
-                bottom = bars.bottom;
-            } else {
-                top = insets.getSystemWindowInsetTop();
-                bottom = insets.getSystemWindowInsetBottom();
-            }
+        int nav = navId > 0
+                ? getResources().getDimensionPixelSize(navId)
+                : 0;
 
-            final String js =
-                    "document.documentElement.style.setProperty('--android-safe-top','"
-                            + top + "px');" +
-                    "document.documentElement.style.setProperty('--android-safe-bottom','"
-                            + bottom + "px');";
+        String js =
+                "document.documentElement.style.setProperty('--android-safe-top','"
+                        + status + "px');" +
+                "document.documentElement.style.setProperty('--android-safe-bottom','"
+                        + nav + "px');";
 
-            webView.post(() -> webView.evaluateJavascript(js, null));
-            return insets;
-        });
-
-        setContentView(root);
+        webView.post(() -> webView.evaluateJavascript(js, null));
 
         webView.loadUrl("file:///android_asset/index.html");
     }
 
-    private void setSystemBarsDark(boolean dark) {
+    private void applySystemBars(boolean dark) {
         int bg = Color.parseColor(dark ? "#0F172A" : "#F8FAFC");
 
         getWindow().setStatusBarColor(bg);
         getWindow().setNavigationBarColor(bg);
 
         int flags = 0;
+
         if (!dark) {
-            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-            if (Build.VERSION.SDK_INT >= 26) {
-                flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-            }
+            flags |= android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            flags |= android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
         }
 
         getWindow().getDecorView().setSystemUiVisibility(flags);
@@ -119,14 +110,14 @@ public class MainActivity extends Activity {
         }
 
         webView.evaluateJavascript(
-                "(function(){try{return window.qbankBack?window.qbankBack():false;}catch(e){return false;}})();",
+                "(function(){" +
+                "try{" +
+                "return window.qbankBack ? window.qbankBack() : false;" +
+                "}catch(e){return false;}" +
+                "})()",
                 value -> {
                     if ("false".equals(value) || "null".equals(value)) {
-                        if (webView.canGoBack()) {
-                            webView.goBack();
-                        } else {
-                            finish();
-                        }
+                        finish();
                     }
                 }
         );
@@ -136,7 +127,7 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public void setSystemBarsDark(boolean dark) {
-            runOnUiThread(() -> setSystemBarsDark(dark));
+            runOnUiThread(() -> applySystemBars(dark));
         }
 
         @JavascriptInterface
@@ -162,7 +153,11 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(
+            int requestCode,
+            int resultCode,
+            Intent data
+    ) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode != RESULT_OK || data == null) {
@@ -170,48 +165,68 @@ public class MainActivity extends Activity {
         }
 
         Uri uri = data.getData();
+
         if (uri == null) {
             return;
         }
 
         try {
             if (requestCode == REQ_EXPORT && pendingExportJson != null) {
-                try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+
+                try (OutputStream out =
+                             getContentResolver().openOutputStream(uri)) {
+
                     if (out != null) {
-                        out.write(pendingExportJson.getBytes(StandardCharsets.UTF_8));
+                        out.write(
+                                pendingExportJson.getBytes(
+                                        StandardCharsets.UTF_8
+                                )
+                        );
                         out.flush();
                     }
                 }
+
                 pendingExportJson = null;
 
             } else if (requestCode == REQ_IMPORT) {
+
                 StringBuilder sb = new StringBuilder();
 
-                try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(
-                                getContentResolver().openInputStream(uri),
-                                StandardCharsets.UTF_8
-                        )
-                )) {
+                try (BufferedReader reader =
+                             new BufferedReader(
+                                     new InputStreamReader(
+                                             getContentResolver()
+                                                     .openInputStream(uri),
+                                             StandardCharsets.UTF_8
+                                     )
+                             )) {
+
                     String line;
+
                     while ((line = reader.readLine()) != null) {
                         sb.append(line).append('\n');
                     }
                 }
 
-                String jsonLiteral = JSONObject.quote(sb.toString());
+                String quoted = JSONObject.quote(sb.toString());
 
                 webView.evaluateJavascript(
-                        "window.applyImportedBackup(" + jsonLiteral + ");",
+                        "window.applyImportedBackup(" +
+                        quoted +
+                        ");",
                         null
                 );
             }
 
         } catch (Exception e) {
+
             webView.evaluateJavascript(
-                    "alert(" + JSONObject.quote(
-                            "Backup operation failed: " + e.getMessage()
-                    ) + ");",
+                    "alert(" +
+                    JSONObject.quote(
+                            "Backup operation failed: " +
+                            e.getMessage()
+                    ) +
+                    ");",
                     null
             );
         }
