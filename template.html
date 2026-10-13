@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>/*NAME*/</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F8FAFC; 
+            --surface: #FFFFFF;
+            --primary: #0F172A; 
+            --accent: #4F46E5; 
+            --accent-bg: #EEF2FF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+            --green: #10B981;
+            --green-bg: #ECFDF5;
+            --red: #EF4444;
+            --red-bg: #FEF2F2;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --bm-color: #F59E0B;
+            --bm-bg: #FEF3C7;
+            --ms-color: #EF4444;
+            --ms-bg: #FEE2E2;
+        }
+
+        [data-theme="dark"] {
+            --bg: #09090B; 
+            --surface: #18181B; 
+            --primary: #FAFAFA;
+            --accent: #6366F1; 
+            --accent-bg: rgba(99, 102, 241, 0.15);
+            --text-main: #FAFAFA;
+            --text-muted: #A1A1AA;
+            --border: #27272A;
+            --green: #10B981;
+            --green-bg: rgba(16, 185, 129, 0.15);
+            --red: #EF4444;
+            --red-bg: rgba(239, 68, 68, 0.15);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.5);
+            --bm-color: #FBBF24;
+            --bm-bg: rgba(245, 158, 11, 0.15);
+            --ms-color: #F87171;
+            --ms-bg: rgba(239, 68, 68, 0.15);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.2s, border-color 0.2s; }
+        body { background: var(--bg); color: var(--text-main); margin: 0; padding: 0; padding-bottom: 80px; overscroll-behavior-y: none; }
+        
+        .screen { display: none; min-height: 100vh; }
+        .screen.active { display: block; }
+        
+        .app-header { background: var(--surface); color: var(--text-main); padding: 16px 20px; display: flex; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .app-header h2 { margin: 0; font-size: 1.15rem; flex: 1; text-align: center; font-weight: 700; letter-spacing: -0.3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .icon-btn { background: none; border: none; color: var(--text-main); font-size: 1.2rem; cursor: pointer; padding: 5px; }
+        
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; }
+        .nav-item { text-align: center; color: var(--text-muted); cursor: pointer; font-size: 0.8rem; font-weight: 700; flex: 1; }
+        .nav-item i { font-size: 1.3rem; margin-bottom: 5px; display: block; }
+        .nav-item.active { color: var(--accent); }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; }
+        .stat-card { background: var(--surface); padding: 20px 15px; border-radius: 16px; text-align: center; border: 1px solid var(--border); box-shadow: var(--shadow-sm); cursor: pointer; }
+        .stat-card i { font-size: 2rem; margin-bottom: 10px; }
+        .stat-card h4 { margin: 0; font-size: 0.95rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+        .stat-card .num { font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-top: 5px; }
+        
+        .card-bm { background: var(--bm-bg); border-color: transparent; }
+        .card-bm i, .card-bm h4, .card-bm .num { color: var(--bm-color); }
+        .card-ms { background: var(--ms-bg); border-color: transparent; }
+        .card-ms i, .card-ms h4, .card-ms .num { color: var(--ms-color); }
+
+        .list-container { padding: 0 20px 20px 20px; }
+        .section-title { font-size: 0.9rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .list-item { background: var(--surface); padding: 18px 20px; border-radius: 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .list-item-content { flex: 1; }
+        .list-title { font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px; line-height: 1.4; }
+        .list-subtitle { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+        
+        .badges-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        .badge { padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .badge.total { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); }
+        .badge.green { color: var(--green); background: var(--green-bg); }
+        .badge.red { color: var(--red); background: var(--red-bg); }
+
+        .reset-icon-btn { color: var(--red); font-size: 1.1rem; background: var(--red-bg); border: none; border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        
+        .q-container { padding: 20px; max-width: 800px; margin: 0 auto; }
+        .q-card { background: var(--surface); border-radius: 20px; padding: 25px; margin-bottom: 25px; border: 1px solid var(--border); position: relative; box-shadow: var(--shadow-sm); }
+        .q-text { font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px; color: var(--text-main); font-weight: 600; padding-right: 40px; }
+        
+        .bookmark-btn { position: absolute; right: 15px; top: 15px; font-size: 1.5rem; background: none; border: none; color: var(--border); cursor: pointer; padding: 5px; }
+        .bookmark-btn.active { color: var(--bm-color); }
+        
+        .q-img { width: 100%; max-width: 100%; height: auto; border-radius: 12px; margin-top: 15px; border: 1px solid var(--border); display: block; object-fit: contain; }
+        
+        .option { padding: 15px; border: 2px solid var(--border); border-radius: 14px; margin-bottom: 12px; display: flex; gap: 15px; cursor: pointer; align-items: center; background: var(--surface); font-weight: 600; color: var(--text-main); line-height: 1.4; }
+        .opt-lbl { font-weight: 700; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--bg); border-radius: 8px; flex-shrink: 0; color: var(--text-muted); border: 1px solid var(--border); }
+        
+        .option.selected { border-color: var(--accent); background: var(--accent-bg); }
+        .option.selected .opt-lbl { background: var(--accent); color: white; border-color: var(--accent); }
+        
+        .correct { background: var(--green-bg) !important; border-color: var(--green) !important; color: var(--green) !important; }
+        .correct .opt-lbl { background: var(--green); color: white; border-color: var(--green); }
+        .wrong { background: var(--red-bg) !important; border-color: var(--red) !important; color: var(--red) !important; }
+        .wrong .opt-lbl { background: var(--red); color: white; border-color: var(--red); }
+        
+        .expl { margin-top: 20px; padding: 20px; background: var(--bg); border-radius: 0 12px 12px 0; display: none; line-height: 1.6; font-size: 0.95rem; color: var(--text-main); font-weight: 500; border: 1px solid var(--border); border-left: 4px solid var(--accent); }
+        .expl img { width: 100%; max-width: 100%; height: auto; border-radius: 8px; margin-top: 10px; display: block; }
+        
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; font-weight: 800; margin-bottom: 10px; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; }
+        .form-control { width: 100%; padding: 14px; border-radius: 12px; border: 2px solid var(--border); background: var(--bg); color: var(--text-main); font-family: inherit; font-weight: 600; font-size: 1rem; outline: none; }
+        .form-control:focus { border-color: var(--accent); }
+        
+        .radio-group { display: flex; gap: 15px; }
+        .radio-card { flex: 1; border: 2px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; font-weight: 800; background: var(--surface); }
+        .radio-card.active { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
+        
+        .checklist-box { border: 2px solid var(--border); border-radius: 12px; max-height: 250px; overflow-y: auto; background: var(--bg); padding: 15px; }
+        .check-item { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-weight: 600; cursor: pointer; color: var(--text-main); }
+        .check-item input { width: 18px; height: 18px; accent-color: var(--accent); }
+        
+        .btn-exam { width: 100%; padding: 16px; border-radius: 12px; font-weight: 800; border: none; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-exam.primary { background: var(--accent); color: white; }
+        
+        .exam-timer-bar { background: var(--surface); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; font-weight: 800; font-size: 1.1rem; }
+        .timer-text { color: var(--red); display: flex; align-items: center; gap: 8px; background: var(--red-bg); padding: 5px 12px; border-radius: 20px; }
+        .exam-nav { display: flex; justify-content: space-between; padding: 15px 20px; background: var(--surface); border-top: 1px solid var(--border); position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; gap: 10px; }
+        .nav-btn { flex: 1; padding: 14px; border-radius: 12px; font-weight: 800; border: none; cursor: pointer; background: var(--bg); color: var(--text-main); border: 1px solid var(--border); }
+        .nav-btn.danger { background: var(--red); color: white; border: none; }
+        .nav-btn.primary { background: var(--accent); color: white; border: none; }
+
+        .filter-btn { padding: 8px 16px; border-radius: 20px; font-weight: 700; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); cursor: pointer; white-space: nowrap; }
+        .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+        
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+        .empty-state i { font-size: 4rem; margin-bottom: 20px; opacity: 0.3; }
+        .empty-state h2 { margin: 0; color: var(--text-main); font-weight: 700; }
+
+
+        /* CoreBTR polish layer */
+        body { background:
+            linear-gradient(180deg, rgba(79,70,229,0.06), transparent 260px),
+            var(--bg);
+        }
+        .app-header { backdrop-filter: blur(14px); }
+        .app-header h2 { letter-spacing: 0; }
+        .stats-grid, .list-container, #screen-custom-exam .q-container { max-width: 980px; margin-left: auto; margin-right: auto; }
+        .stat-card, .list-item, .q-card, .radio-card, .form-control, .checklist-box {
+            border-radius: 14px;
+        }
+        .stat-card, .list-item, .q-card {
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+        .list-item, .stat-card, .option, .btn-exam, .nav-btn, .radio-card {
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+        }
+        .list-item:hover, .stat-card:hover, .option:hover, .radio-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.09);
+        }
+        .btn-exam.primary, .nav-btn.primary, .filter-btn.active {
+            box-shadow: 0 10px 22px rgba(79, 70, 229, 0.22);
+        }
+        .corebtr-microline {
+            max-width: 980px;
+            margin: 12px auto -4px;
+            padding: 0 20px;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            font-weight: 700;
+            line-height: 1.4;
+            text-align: center;
+            min-height: 20px;
+        }
+        .result-kind-nudge {
+            max-width: 620px;
+            margin: 0 auto 20px;
+            padding: 8px 12px;
+            color: var(--text-muted);
+            font-size: 0.86rem;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+        .home-footer-motto {
+            max-width: 980px;
+            margin: 6px auto 24px;
+            padding: 0 20px 10px;
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            font-weight: 700;
+            line-height: 1.45;
+            text-align: center;
+            opacity: 0.78;
+        }
+        .q-text { letter-spacing: 0; }
+        .expl table { width: 100% !important; max-width: 100%; border-collapse: collapse; overflow: hidden; }
+        .expl td, .expl th { border: 1px solid var(--border); padding: 8px; }
+        @media (min-width: 760px) {
+            .stats-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+            .list-container { padding-left: 24px; padding-right: 24px; }
+        }
+        @media (max-width: 520px) {
+            body { padding-bottom: 76px; }
+            .app-header { padding: 14px 16px; }
+            .stats-grid { gap: 10px; padding: 16px; }
+            .stat-card { padding: 16px 10px; }
+            .list-container, .q-container, .corebtr-microline, .home-footer-motto { padding-left: 16px; padding-right: 16px; }
+            .q-card { padding: 20px 16px; }
+            .q-text { font-size: 1rem; padding-right: 34px; }
+            .option { padding: 13px; gap: 12px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="bottom-nav" id="main-bottom-nav">
+        <div class="nav-item active" onclick="switchTab('screen-home', this)"><i class="fas fa-layer-group"></i> Library</div>
+        <div class="nav-item" onclick="switchTab('screen-custom-exam', this)"><i class="fas fa-stopwatch"></i> Exam Mode</div>
+    </div>
+
+    <div id="screen-home" class="screen active">
+        <div class="app-header">
+            <div style="width: 30px;"></div>
+            <h2>/*NAME*/</h2>
+            <button class="icon-btn" onclick="toggleTheme()"><i class="fas fa-moon" id="theme-icon"></i></button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card card-bm" onclick="openBookmarks()">
+                <i class="fas fa-bookmark"></i>
+                <h4>Bookmarks</h4>
+                <div class="num" id="bm-count">0</div>
+            </div>
+            <div class="stat-card card-ms" onclick="openMistakes()">
+                <i class="fas fa-bolt"></i>
+                <h4>Mistakes</h4>
+                <div class="num" id="ms-count">0</div>
+            </div>
+        </div>
+        
+        <div class="list-container">
+            <div class="section-title">All Folders</div>
+            <div id="folder-list"></div>
+        </div>
+    </div>
+
+    <div id="screen-folder" class="screen">
+        <div class="app-header">
+            <button class="icon-btn" onclick="showScreen('screen-home')"><i class="fas fa-chevron-left"></i></button>
+            <h2 id="header-folder-name">Section</h2>
+            <div style="width: 30px;"></div>
+        </div>
+        <div class="list-container" style="padding-top: 20px;">
+            <div class="section-title">Tests & Modules</div>
+            <div id="lesson-list"></div>
+        </div>
+    </div>
+
+    <div id="screen-custom-exam" class="screen">
+        <div class="app-header"><h2>Create Exam</h2></div>
+        <div class="q-container">
+            <div class="q-card" style="box-shadow: none;">
+                <div class="form-group">
+                    <label>1. Select Folders</label>
+                    <div class="checklist-box">
+                        <label class="check-item"><input type="checkbox" id="check-all" onchange="toggleAllSubjects(this)" checked> <b>Select All Folders</b></label>
+                        <hr style="border:none; border-top:1px solid var(--border); margin: 10px 0;">
+                        <div id="subject-checkboxes"></div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:15px;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Questions</label>
+                        <input type="number" class="form-control" id="ce-numq" value="50" min="5" max="300">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Time (Mins)</label>
+                        <input type="number" class="form-control" id="ce-time" value="50" min="5" max="300">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Marking Scheme</label>
+                    <div class="radio-group">
+                        <div class="radio-card active" id="mark-neet" onclick="setMarking('NEET')">NEET PG<br><small style="color:var(--text-muted);">+4 / -1</small></div>
+                        <div class="radio-card" id="mark-fmge" onclick="setMarking('FMGE')">FMGE<br><small style="color:var(--text-muted);">+1 / 0</small></div>
+                    </div>
+                </div>
+                <button class="btn-exam primary" onclick="startCustomExam()" style="margin-top: 10px;">
+                    <i class="fas fa-play"></i> Start Exam
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-active-exam" class="screen" style="padding-bottom: 100px;">
+        <div class="exam-timer-bar">
+            <div id="exam-q-tracker">Q 1/50</div>
+            <div class="timer-text"><i class="fas fa-clock"></i> <span id="exam-timer">00:00</span></div>
+        </div>
+        <div class="q-container" id="exam-q-container"></div>
+        <div class="exam-nav">
+            <button class="nav-btn" onclick="examPrev()"><i class="fas fa-chevron-left"></i> Prev</button>
+            <button class="nav-btn danger" onclick="submitExam()">Submit</button>
+            <button class="nav-btn primary" onclick="examNext()">Next <i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <div id="screen-quiz" class="screen">
+        <div class="app-header">
+            <button class="icon-btn" onclick="goBackFromQuiz()"><i class="fas fa-chevron-left"></i></button>
+            <h2 id="header-quiz-name">Practice</h2>
+            <button class="reset-icon-btn" id="lesson-reset-btn" onclick="resetCurrentTest()" style="display:none;"><i class="fas fa-rotate-left"></i></button>
+        </div>
+        
+        <div id="exam-result-banner" style="display:none; background:var(--surface); padding:25px 20px; text-align:center; border-bottom:1px solid var(--border);"></div>
+        
+        <div class="q-container" id="quiz-container"></div>
+    </div>
+
+    <script>
+        const APP_DATA = /*APP_DATA*/[];
+        const PREFIX = "qbank_";
+        
+        let progress = JSON.parse(localStorage.getItem(PREFIX + 'prog')) || {};
+        let bookmarks = JSON.parse(localStorage.getItem(PREFIX + 'bm')) || {};
+        let mistakes = JSON.parse(localStorage.getItem(PREFIX + 'mistakes')) || {};
+        
+        let Q_DICT = {};
+        let ALL_QS_FLAT = [];
+        let currentFolderIdx = null;
+        let currentLessonIdx = null;
+        let currentContext = null;
+
+        let examStyle = 'NEET'; 
+        let activeExamQs = [];
+        let activeExamAns = {}; 
+        let currentExamIdx = 0;
+        let timerInterval;
+        let timeRemainingSecs = 0;
+
+
+        const COREBTR_MICRO_LINES = [
+        ];
+
+        function rotateCoreBtrMicroline() {
+            const el = document.getElementById('corebtr-microline');
+            if (!el) return;
+            let idx = Math.floor(Math.random() * COREBTR_MICRO_LINES.length);
+            el.textContent = COREBTR_MICRO_LINES[idx];
+            setInterval(() => {
+                idx = (idx + 1) % COREBTR_MICRO_LINES.length;
+                el.textContent = COREBTR_MICRO_LINES[idx];
+            }, 45000);
+        }
+
+        function init() {
+            if (localStorage.getItem(PREFIX + 'theme') === 'dark') toggleTheme(true);
+            rotateCoreBtrMicroline();
+            updateHomeCounters();
+            
+            let folderHtml = '';
+            let chkHtml = '';
+            
+            APP_DATA.forEach((folder, fIdx) => {
+                folder.lessons.forEach(lesson => {
+                    lesson.questions.forEach(q => { Q_DICT[q.id] = q; ALL_QS_FLAT.push(q); });
+                });
+                
+                chkHtml += `<label class="check-item"><input type="checkbox" class="subj-chk" value="${fIdx}" checked> ${folder.title}</label>`;
+                
+                let totalQs = folder.lessons.reduce((acc, l) => acc + l.questions.length, 0);
+                folderHtml += `
+                    <div class="list-item" onclick="openFolder(${fIdx})">
+                        <div class="list-item-content">
+                            <div class="list-title">${folder.title}</div>
+                            <div class="list-subtitle">${folder.lessons.length} Tests &nbsp;•&nbsp; ${totalQs} Qs</div>
+                        </div>
+                        <i class="fas fa-chevron-right arrow" style="color:var(--border);"></i>
+                    </div>`;
+            });
+            document.getElementById('folder-list').innerHTML = folderHtml;
+            document.getElementById('subject-checkboxes').innerHTML = chkHtml;
+        }
+
+        function toggleTheme(forceDark = false) {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            if (!forceDark && body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                localStorage.setItem(PREFIX + 'theme', 'light');
+                if(icon) icon.className = 'fas fa-moon';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                localStorage.setItem(PREFIX + 'theme', 'dark');
+                if(icon) icon.className = 'fas fa-sun';
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(PREFIX + 'prog', JSON.stringify(progress));
+            localStorage.setItem(PREFIX + 'bm', JSON.stringify(bookmarks));
+            localStorage.setItem(PREFIX + 'mistakes', JSON.stringify(mistakes));
+            updateHomeCounters();
+        }
+
+        function updateHomeCounters() {
+            document.getElementById('bm-count').innerText = Object.keys(bookmarks).length;
+            document.getElementById('ms-count').innerText = Object.keys(mistakes).length;
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        function switchTab(id, el) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+            showScreen(id);
+        }
+
+        function goBackFromQuiz() {
+            document.getElementById('exam-result-banner').style.display = 'none';
+            if (currentContext === 'lesson') openFolder(currentFolderIdx);
+            else showScreen('screen-home');
+            document.getElementById('main-bottom-nav').style.display = 'flex';
+        }
+
+        function openFolder(fIdx) {
+            currentFolderIdx = fIdx;
+            const folder = APP_DATA[fIdx];
+            document.getElementById('header-folder-name').innerText = folder.title;
+            let html = '';
+            folder.lessons.forEach((lesson, lIdx) => {
+                let total = lesson.questions.length;
+                let correct = 0, wrong = 0;
+                lesson.questions.forEach(q => {
+                    if (progress[q.id]) {
+                        if (progress[q.id].status === 'correct') correct++;
+                        else if (progress[q.id].status === 'wrong') wrong++;
+                    }
+                });
+                html += `
+                    <div class="list-item" style="flex-direction:column; align-items:stretch;" onclick="launchSimpleMode(${fIdx}, ${lIdx})">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div class="list-title" style="margin:0;">${lesson.title}</div>
+                            <i class="fas fa-play-circle" style="color:var(--accent); font-size:1.3rem;"></i>
+                        </div>
+                        <div class="badges-row">
+                            <span class="badge total"><i class="fas fa-hashtag"></i> ${total}</span>
+                            <span class="badge green"><i class="fas fa-check"></i> ${correct}</span>
+                            <span class="badge red"><i class="fas fa-times"></i> ${wrong}</span>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('lesson-list').innerHTML = html;
+            showScreen('screen-folder');
+        }
+
+        window.resetCurrentTest = function() {
+            if(!confirm("Restart this specific test?")) return;
+            const lesson = APP_DATA[currentFolderIdx].lessons[currentLessonIdx];
+            lesson.questions.forEach(q => { delete progress[q.id]; delete mistakes[q.id]; });
+            saveState();
+            renderSimpleView(lesson.questions);
+        }
+
+        window.launchSimpleMode = function(fIdx, lIdx) {
+            currentFolderIdx = fIdx;
+            currentLessonIdx = lIdx;
+            currentContext = 'lesson';
+            const lesson = APP_DATA[fIdx].lessons[lIdx];
+            document.getElementById('main-bottom-nav').style.display = 'none';
+            document.getElementById('lesson-reset-btn').style.display = 'flex';
+            document.getElementById('header-quiz-name').innerText = lesson.title;
+            renderSimpleView(lesson.questions);
+            showScreen('screen-quiz');
+        }
+
+        function renderSimpleView(qList) {
+            let html = '';
+            qList.forEach((q, idx) => {
+                let isBm = bookmarks[q.id] ? 'active' : '';
+                let imgHtml = q.img ? `<img src="${q.img}" class="q-img">` : '';
+                let isAnswered = false;
+                let savedSel = null;
+                let showExpl = 'none';
+                
+                if (currentContext === 'lesson' && progress[q.id]) {
+                    isAnswered = true;
+                    savedSel = progress[q.id].sel;
+                    showExpl = 'block';
+                }
+                
+                let lockClass = isAnswered ? 'locked' : '';
+                html += `
+                <div class="q-card review-card" data-status="all" id="card-${q.id}">
+                    <button class="bookmark-btn ${isBm}" onclick="toggleBookmark('${q.id}', this)"><i class="fas fa-bookmark"></i></button>
+                    <div class="q-text"><span style="color:var(--accent);">Q${idx+1}.</span> ${q.text} ${imgHtml}</div>
+                    <div class="opts-container ${lockClass}" id="opts-${q.id}">`;
+                
+                for(let optKey in q.options) {
+                    let cClass = '';
+                    if (isAnswered) {
+                        if (optKey === q.ans) cClass = 'correct';
+                        else if (optKey === savedSel && savedSel !== q.ans) cClass = 'wrong';
+                    }
+                    html += `
+                        <div class="option ${cClass}" onclick="handleSimpleAnswer(this, '${q.id}', '${q.ans}', '${optKey}')">
+                            <div class="opt-lbl">${optKey}</div>
+                            <div style="flex:1;">${q.options[optKey]}</div>
+                        </div>`;
+                }
+                html += `
+                    </div>
+                    <div class="expl" id="expl-${q.id}" style="display:${showExpl};">
+                        <strong style="color:var(--green); font-size:1.05rem;"><i class="fas fa-check-circle"></i> Correct Answer: ${q.ans}</strong><br><br>
+                        ${q.expl}
+                    </div>
+                </div>`;
+            });
+            document.getElementById('quiz-container').innerHTML = html;
+        }
+
+        window.handleSimpleAnswer = function(el, qId, correctAns, selectedOpt) {
+            let container = document.getElementById('opts-' + qId);
+            if (container.classList.contains('locked')) return;
+            container.classList.add('locked');
+            
+            let isCorrect = (selectedOpt === correctAns);
+            if (isCorrect) el.classList.add('correct');
+            else {
+                el.classList.add('wrong');
+                Array.from(container.children).forEach(child => {
+                    if (child.querySelector('.opt-lbl').innerText === correctAns) child.classList.add('correct');
+                });
+            }
+            document.getElementById('expl-' + qId).style.display = 'block';
+
+            if (currentContext === 'lesson') {
+                progress[qId] = { status: isCorrect ? 'correct' : 'wrong', sel: selectedOpt };
+                if (!isCorrect) mistakes[qId] = true; 
+                else delete mistakes[qId]; 
+                saveState();
+            } else if (currentContext === 'mistake') {
+                if (isCorrect) { delete mistakes[qId]; saveState(); }
+            }
+        }
+
+        window.toggleBookmark = function(qId, btn) {
+            if (bookmarks[qId]) { delete bookmarks[qId]; btn.classList.remove('active'); } 
+            else { bookmarks[qId] = true; btn.classList.add('active'); }
+            saveState();
+        }
+
+        window.openBookmarks = function() {
+            currentContext = 'bookmark';
+            document.getElementById('main-bottom-nav').style.display = 'none';
+            document.getElementById('lesson-reset-btn').style.display = 'none';
+            document.getElementById('header-quiz-name').innerText = "Saved Bookmarks";
+            let qList = Object.keys(bookmarks).map(id => Q_DICT[id]).filter(q => q);
+            if (qList.length === 0) {
+                document.getElementById('quiz-container').innerHTML = `<div class="empty-state"><i class="fas fa-bookmark"></i><h2>No Bookmarks</h2><p>Tap the bookmark icon on any question to save it here for review.</p></div>`;
+                showScreen('screen-quiz');
+                return;
+            }
+            renderSimpleView(qList);
+            showScreen('screen-quiz');
+        }
+
+        window.openMistakes = function() {
+            currentContext = 'mistake';
+            document.getElementById('main-bottom-nav').style.display = 'none';
+            document.getElementById('lesson-reset-btn').style.display = 'none';
+            document.getElementById('header-quiz-name').innerText = "Review Mistakes";
+            let qList = Object.keys(mistakes).map(id => Q_DICT[id]).filter(q => q);
+            if (qList.length === 0) {
+                document.getElementById('quiz-container').innerHTML = `<div class="empty-state"><i class="fas fa-check-circle" style="color:var(--green);"></i><h2>All Clear!</h2><p>You have no incorrect questions to review.</p></div>`;
+                showScreen('screen-quiz');
+                return;
+            }
+            renderSimpleView(qList);
+            showScreen('screen-quiz');
+        }
+
+        window.toggleAllSubjects = function(cb) { document.querySelectorAll('.subj-chk').forEach(el => el.checked = cb.checked); }
+        window.setMarking = function(style) {
+            examStyle = style;
+            document.getElementById('mark-neet').classList.remove('active');
+            document.getElementById('mark-fmge').classList.remove('active');
+            document.getElementById('mark-' + style.toLowerCase()).classList.add('active');
+        }
+
+        window.startCustomExam = function() {
+            let selectedIdxs = Array.from(document.querySelectorAll('.subj-chk:checked')).map(cb => parseInt(cb.value));
+            if(selectedIdxs.length === 0) return alert("Select at least one folder!");
+            let numQ = parseInt(document.getElementById('ce-numq').value) || 50;
+            let timeM = parseInt(document.getElementById('ce-time').value) || 50;
+            
+            let pool = [];
+            selectedIdxs.forEach(idx => { APP_DATA[idx].lessons.forEach(l => pool.push(...l.questions)); });
+            if(pool.length === 0) return alert("No questions in selected folders!");
+            
+            pool.sort(() => 0.5 - Math.random());
+            let qList = pool.slice(0, numQ);
+            startExamEngine(qList, timeM);
+        }
+
+        function startExamEngine(qList, timeMins) {
+            activeExamQs = qList;
+            activeExamAns = {};
+            currentExamIdx = 0;
+            timeRemainingSecs = timeMins * 60;
+            
+            document.getElementById('main-bottom-nav').style.display = 'none';
+            renderExamQuestion();
+            showScreen('screen-active-exam');
+            
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeRemainingSecs--;
+                updateTimerDisplay();
+                if(timeRemainingSecs <= 0) { clearInterval(timerInterval); submitExam(); }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            let m = Math.floor(timeRemainingSecs / 60);
+            let s = timeRemainingSecs % 60;
+            document.getElementById('exam-timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }
+
+        function renderExamQuestion() {
+            let q = activeExamQs[currentExamIdx];
+            document.getElementById('exam-q-tracker').innerText = `Q ${currentExamIdx + 1} / ${activeExamQs.length}`;
+            let imgHtml = q.img ? `<img src="${q.img}" class="q-img">` : '';
+            let html = `
+                <div class="q-card" style="box-shadow:none; border:none; padding:10px;">
+                    <div class="q-text">${q.text} ${imgHtml}</div>
+                    <div class="opts-container">`;
+            for(let optKey in q.options) {
+                let isSel = (activeExamAns[currentExamIdx] === optKey) ? 'selected' : '';
+                html += `
+                    <div class="option ${isSel}" onclick="selectExamOption('${optKey}')">
+                        <div class="opt-lbl">${optKey}</div>
+                        <div style="flex:1;">${q.options[optKey]}</div>
+                    </div>`;
+            }
+            html += `</div></div>`;
+            document.getElementById('exam-q-container').innerHTML = html;
+        }
+
+        window.selectExamOption = function(optKey) { activeExamAns[currentExamIdx] = optKey; renderExamQuestion(); }
+        window.examNext = function() { if(currentExamIdx < activeExamQs.length - 1) { currentExamIdx++; renderExamQuestion(); } }
+        window.examPrev = function() { if(currentExamIdx > 0) { currentExamIdx--; renderExamQuestion(); } }
+
+        window.filterReview = function(status, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.review-card').forEach(card => {
+                if(status === 'all' || card.getAttribute('data-status') === status) card.style.display = 'block';
+                else card.style.display = 'none';
+            });
+        }
+
+        window.submitExam = function() {
+            if(timeRemainingSecs > 0 && !confirm("Submit exam early?")) return;
+            clearInterval(timerInterval);
+            
+            let correct = 0, wrong = 0, skipped = 0;
+            activeExamQs.forEach((q, i) => {
+                let sel = activeExamAns[i];
+                if(sel) {
+                    if(sel === q.ans) correct++;
+                    else wrong++;
+                } else skipped++;
+            });
+            
+            let maxScore = 0, score = 0;
+            if(examStyle === 'NEET') {
+                maxScore = activeExamQs.length * 4;
+                score = (correct * 4) - (wrong * 1);
+            } else {
+                maxScore = activeExamQs.length * 1;
+                score = correct * 1; 
+            }
+            
+            currentContext = 'exam-review';
+            document.getElementById('header-quiz-name').innerText = "Exam Results";
+            document.getElementById('lesson-reset-btn').style.display = 'none';
+            
+            let bannerHtml = `
+                <div style="font-size:0.9rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px;">Exam Score (${examStyle})</div>
+                <div style="font-size:3rem; font-weight:800; color:var(--accent); margin-bottom:20px;">${score} <span style="font-size:1.2rem; color:var(--text-muted);">/ ${maxScore}</span></div>
+                
+                <div style="display:flex; justify-content:center; gap:10px; margin-bottom:25px; flex-wrap:wrap;">
+                    <div style="background:var(--green-bg); color:var(--green); padding:8px 15px; border-radius:12px; font-weight:700;"><i class="fas fa-check"></i> Correct: ${correct}</div>
+                    <div style="background:var(--red-bg); color:var(--red); padding:8px 15px; border-radius:12px; font-weight:700;"><i class="fas fa-times"></i> Incorrect: ${wrong}</div>
+                    <div style="background:var(--bg); color:var(--text-muted); padding:8px 15px; border-radius:12px; font-weight:700; border:1px solid var(--border);"><i class="fas fa-minus"></i> Skipped: ${skipped}</div>
+                </div>
+
+                <div class="result-kind-nudge">
+                    Knowledge becomes powerful when it makes you useful to someone else.
+                </div>
+
+                <div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:5px; justify-content:center;">
+                    <button class="filter-btn active" onclick="filterReview('all', this)">All</button>
+                    <button class="filter-btn" onclick="filterReview('correct', this)">Correct</button>
+                    <button class="filter-btn" onclick="filterReview('wrong', this)">Incorrect</button>
+                    <button class="filter-btn" onclick="filterReview('skipped', this)">Skipped</button>
+                </div>
+            `;
+            document.getElementById('exam-result-banner').innerHTML = bannerHtml;
+            document.getElementById('exam-result-banner').style.display = 'block';
+            
+            let html = '';
+            activeExamQs.forEach((q, idx) => {
+                let sel = activeExamAns[idx];
+                let isBm = bookmarks[q.id] ? 'active' : '';
+                let imgHtml = q.img ? `<img src="${q.img}" class="q-img">` : '';
+                
+                let qStatus = 'skipped';
+                if(sel) {
+                    if(sel === q.ans) qStatus = 'correct';
+                    else qStatus = 'wrong';
+                }
+                
+                html += `
+                <div class="q-card review-card" data-status="${qStatus}" id="card-${q.id}">
+                    <button class="bookmark-btn ${isBm}" onclick="toggleBookmark('${q.id}', this)"><i class="fas fa-bookmark"></i></button>
+                    <div class="q-text"><span style="color:var(--accent);">Q${idx+1}.</span> ${q.text} ${imgHtml}</div>
+                    <div class="opts-container locked">`;
+                
+                for(let optKey in q.options) {
+                    let cClass = '';
+                    if (optKey === q.ans) cClass = 'correct';
+                    else if (optKey === sel && sel !== q.ans) cClass = 'wrong';
+
+                    html += `
+                        <div class="option ${cClass}">
+                            <div class="opt-lbl">${optKey}</div>
+                            <div style="flex:1;">${q.options[optKey]}</div>
+                        </div>`;
+                }
+                
+                html += `
+                    </div>
+                    <div class="expl" style="display:block;">
+                        <strong style="color:var(--green); font-size:1.05rem;"><i class="fas fa-check-circle"></i> Correct Answer: ${q.ans}</strong><br><br>
+                        ${q.expl}
+                    </div>
+                </div>`;
+                
+                if(qStatus === 'wrong') mistakes[q.id] = true;
+            });
+            
+            saveState();
+            document.getElementById('quiz-container').innerHTML = html;
+            showScreen('screen-quiz');
+        }
+
+        init();
+    </script>
+</body>
+</html>
