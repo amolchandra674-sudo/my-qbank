@@ -1,0 +1,37 @@
+name: One-time browser base-path repair
+on:
+  push:
+    branches:
+      - browser-path-fix
+permissions:
+  contents: write
+jobs:
+  repair:
+    if: contains(github.event.head_commit.message, 'Install temporary browser-base repair workflow')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: browser-path-fix
+      - name: Remove Android-only base URL
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+          tag = '    <base href="file:///android_asset/">\n'
+          if text.count(tag) != 1:
+              raise SystemExit(f"Expected exactly one Android base tag, found {text.count(tag)}")
+          text = text.replace(tag, "", 1)
+          if "file:///android_asset/" in text:
+              raise SystemExit("Android asset base remains after patch")
+          path.write_text(text, encoding="utf-8", newline="")
+          print(f"Patched {path}; {len(text):,} characters remain")
+          PY
+      - name: Commit browser-compatible HTML
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Fix QBank asset base path for browser use"
+          git push origin HEAD:browser-path-fix
