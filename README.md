@@ -21,7 +21,7 @@ For everyday use and source control, this repository keeps the smaller **HTML + 
 5. Generate the web build: `python pdf2qbank-3.py qbank_merged_6322.pdf -o out --name "My QBank"`.
 6. For a single self-contained HTML file, add `--embed` to the generator command. This produces a very large file; use the ordinary HTML + `img/` output when developing the site.
 
-`pdf2qbank-3.py` is the latest retained generator. It omits questions with broken option/answer data by default and writes a review report. `template.html` is its generation template. `reference/Corebtr Elite.html` is a preserved design/reference file, not the current generated QBank.
+`pdf2qbank-3.py` is the latest retained generator. It omits questions with broken option/answer data by default and writes a review report. `template.html` is its generation template. The original `Corebtr Elite.html` design/reference is preserved as 28 numbered text parts under `reference/Corebtr Elite.html.parts/`; reconstruct it with `python reference/restore_reference.py`. It is not the current generated QBank.
 
 ## Repository hygiene
 
